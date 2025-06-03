@@ -1,0 +1,42 @@
+{
+  "env": {
+    "node": true,
+    "es2022": true,
+    "mocha": true
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "rules": {
+    "indent": ["error", 2],
+    "linebreak-style": ["error", "unix"],
+    "quotes": ["error", "single"],
+    "semi": ["error", "always"],
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "no-console": ["warn", { "allow": ["warn", "error", "info"] }],
+    "comma-dangle": ["error", "only-multiline"],
+    "object-curly-spacing": ["error", "always"],
+    "array-bracket-spacing": ["error", "never"],
+    "space-before-function-paren": ["error", "always"],
+    "keyword-spacing": ["error", { "before": true, "after": true }],
+    "space-infix-ops": "error",
+    "eol-last": ["error", "always"],
+    "no-trailing-spaces": "error",
+    "max-len": ["error", { "code": 120, "ignoreUrls": true }],
+    "camelcase": ["error", { "properties": "always" }],
+    "prefer-const": "error",
+    "no-var": "error",
+    "arrow-spacing": ["error", { "before": true, "after": true }],
+    "no-multiple-empty-lines": ["error", { "max": 2, "maxEOF": 1 }]
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    "dist/",
+    "build/",
+    "coverage/" 
+  ]
+}
