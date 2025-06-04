@@ -177,13 +177,13 @@ class TaskService {
   async getTaskById(id) {
     try {
       if (!mongoose.isValidObjectId(id)) {
-        const error = new Error('Invalid task ID format.');
+        const error = new Error('Invalid task ID format');
         error.status = 400;
         throw error;
       }
       const task = await taskRepository.findById(id);
       if (!task) {
-        const error = new Error('Task not found.');
+        const error = new Error('Task not found');
         error.status = 404;
         throw error;
       }
@@ -203,14 +203,14 @@ class TaskService {
   async updateTask(id, updateData) {
     try {
       if (!mongoose.isValidObjectId(id)) {
-        const error = new Error('Invalid task ID format.');
+        const error = new Error('Invalid task ID format');
         error.status = 400;
         throw error;
       }
 
       const currentTask = await taskRepository.findById(id);
       if (!currentTask) {
-        const error = new Error('Task not found.');
+        const error = new Error('Task not found');
         error.status = 404;
         throw error;
       }
@@ -291,17 +291,17 @@ class TaskService {
   async deleteTask(id) {
     try {
       if (!mongoose.isValidObjectId(id)) {
-        const error = new Error('Invalid task ID format.');
+        const error = new Error('Invalid task ID format');
         error.status = 400;
         throw error;
       }
       const deletedTask = await taskRepository.deleteById(id);
       if (!deletedTask) {
-        const error = new Error('Task not found.');
+        const error = new Error('Task not found');
         error.status = 404;
         throw error;
       }
-      return deletedTask; // Or simply return a success confirmation
+      return deletedTask;
     } catch (error) {
       throw error;
     }
@@ -316,20 +316,20 @@ class TaskService {
   async getTaskHistory(id) {
     try {
       if (!mongoose.isValidObjectId(id)) {
-        const error = new Error('Invalid task ID format.');
+        const error = new Error('Invalid task ID format');
         error.status = 400;
         throw error;
       }
-      const task = await taskRepository.findById(id); // findById returns full Mongoose doc with history
+      const task = await taskRepository.findById(id);
       if (!task) {
-        const error = new Error('Task not found.');
+        const error = new Error('Task not found');
         error.status = 404;
         throw error;
       }
       return {
         taskId: task._id,
         taskTitle: task.title,
-        history: task.history.sort((a, b) => b.timestamp - a.timestamp), // Sort newest first
+        history: task.history.sort((a, b) => b.timestamp - a.timestamp),
       };
     } catch (error) {
       throw error;

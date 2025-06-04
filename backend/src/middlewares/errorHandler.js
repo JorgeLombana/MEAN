@@ -3,7 +3,7 @@
  * Handles validation, MongoDB, and generic errors with formatted responses
  */
 
-const errorHandler = (err, req, res) => {
+const errorHandler = (err, req, res, next) => {
   const error = { ...err };
   error.message = err.message;
 
@@ -23,6 +23,18 @@ const errorHandler = (err, req, res) => {
     console.error('Stack:', err.stack);
   }
 
+  res.setHeader('Content-Type', 'application/json');
+
+  if (err.status === 404) {
+    return res.status(404).json({
+      success: false,
+      message: err.message || 'Resource not found',
+      requestId: req.id,
+      timestamp: new Date().toISOString(),
+      version: 'v1'
+    });
+  }
+
   if (err.name === 'ValidationError') {
     return res.status(400).json({
       success: false,
@@ -34,6 +46,7 @@ const errorHandler = (err, req, res) => {
       })),
       requestId: req.id,
       timestamp: new Date().toISOString(),
+      version: 'v1'
     });
   }
 
@@ -45,6 +58,7 @@ const errorHandler = (err, req, res) => {
       value: err.value,
       requestId: req.id,
       timestamp: new Date().toISOString(),
+      version: 'v1'
     });
   }
 
@@ -57,6 +71,7 @@ const errorHandler = (err, req, res) => {
       value: err.keyValue[field],
       requestId: req.id,
       timestamp: new Date().toISOString(),
+      version: 'v1'
     });
   }
 
@@ -66,6 +81,7 @@ const errorHandler = (err, req, res) => {
       message: 'Database connection error. Please try again later.',
       requestId: req.id,
       timestamp: new Date().toISOString(),
+      version: 'v1',
       ...(process.env.NODE_ENV === 'development' && {
         details: err.message,
       }),
@@ -79,6 +95,7 @@ const errorHandler = (err, req, res) => {
       errors: err.details,
       requestId: req.id,
       timestamp: new Date().toISOString(),
+      version: 'v1'
     });
   }
 
@@ -89,6 +106,7 @@ const errorHandler = (err, req, res) => {
       requestId: req.id,
       timestamp: new Date().toISOString(),
       retryAfter: err.retryAfter || '15 minutes',
+      version: 'v1'
     });
   }
 
@@ -97,6 +115,7 @@ const errorHandler = (err, req, res) => {
     message: err.message || 'Internal Server Error',
     requestId: req.id,
     timestamp: new Date().toISOString(),
+    version: 'v1',
     ...(process.env.NODE_ENV === 'development' && {
       stack: err.stack,
       details: err,

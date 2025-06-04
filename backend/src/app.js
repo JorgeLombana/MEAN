@@ -153,7 +153,9 @@ app.use((req, res) => {
     message: 'Route not found',
     path: req.originalUrl,
     method: req.method,
+    requestId: req.id,
     timestamp: new Date().toISOString(),
+    version: 'v1'
   });
 });
 
