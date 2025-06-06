@@ -6,11 +6,12 @@
     "start": "ng serve",
     "start:qa": "ng serve --configuration=qa",
     "start:prod": "ng serve --configuration=production",
-    "build": "ng build",
+    "build": "ng build --configuration production",
     "build:qa": "ng build --configuration=qa",
     "build:prod": "ng build --configuration=production",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "vercel-build": "ng build --configuration production"
   },
   "private": true,
   "dependencies": {
