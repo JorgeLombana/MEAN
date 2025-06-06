@@ -1,17 +1,16 @@
 import {
   Component,
   OnInit,
-  ViewChild,
   AfterViewInit,
   signal,
   computed,
   inject,
   DestroyRef,
+  viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
-import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 // Angular Material Imports
@@ -31,6 +30,8 @@ import { MatSortModule, MatSort, Sort } from '@angular/material/sort';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 // Application Imports
 import {
@@ -41,6 +42,16 @@ import {
 } from '../../models/task.interface';
 import { TaskService } from '../../services/task.service';
 import { PaginatedTasksResponse } from '../../models/task-service.interface';
+import {
+  TaskFormDialogComponent,
+  TaskFormDialogData,
+} from '../../components/task-form-dialog/task-form-dialog.component';
+import {
+  TaskHistoryDialogComponent,
+  TaskHistoryDialogData,
+} from '../../components/task-history-dialog/task-history-dialog.component';
+import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogData } from '../../../../shared/interfaces/confirmation-dialog-data.interface';
 
 /**
  * Component for displaying and managing a list of tasks.
@@ -68,11 +79,12 @@ import { PaginatedTasksResponse } from '../../models/task-service.interface';
   templateUrl: './task-list.component.html',
 })
 export class TaskListComponent implements OnInit, AfterViewInit {
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private readonly paginator = viewChild(MatPaginator);
+  private readonly sort = viewChild(MatSort);
 
   private readonly taskService = inject(TaskService);
-  private readonly router = inject(Router);
+  private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
 
   // Form controls for filters
@@ -196,8 +208,9 @@ export class TaskListComponent implements OnInit, AfterViewInit {
   }
 
   private connectPaginator(): void {
-    if (this.paginator?.page) {
-      this.paginator.page
+    const paginatorInstance = this.paginator();
+    if (paginatorInstance?.page) {
+      paginatorInstance.page
         .pipe(takeUntil(this.destroy$))
         .subscribe((event: PageEvent) => {
           if (!this.skipNextPageEvent) {
@@ -209,8 +222,9 @@ export class TaskListComponent implements OnInit, AfterViewInit {
   }
 
   private connectSort(): void {
-    if (this.sort && this.dataSource()) {
-      this.dataSource().sort = this.sort;
+    const sortInstance = this.sort();
+    if (sortInstance && this.dataSource()) {
+      this.dataSource().sort = sortInstance;
     }
   }
 
@@ -328,33 +342,96 @@ export class TaskListComponent implements OnInit, AfterViewInit {
     this.currentPage.set(1);
     this.loadTasks();
   }
-
   // Task CRUD operations
   public createTask(): void {
-    this.router.navigate(['/tasks/new']);
+    const dialogRef = this.dialog.open(TaskFormDialogComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      disableClose: true,
+      data: {
+        mode: 'create',
+      } as TaskFormDialogData,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.loadTasks();
+      }
+    });
   }
 
   public editTask(task: Task): void {
-    this.router.navigate(['/tasks/edit', task._id]);
+    const dialogRef = this.dialog.open(TaskFormDialogComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      disableClose: true,
+      data: {
+        task: task,
+        mode: 'edit',
+      } as TaskFormDialogData,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.loadTasks();
+      }
+    });
   }
 
   /**
-   * Deletes task with user confirmation
+   * Deletes a task with user confirmation using enhanced Material dialog
+   * Implements proper error handling and user feedback
+   *
+   * @param task - The task to be deleted
    */
-  public deleteTask(task: Task): void {
-    const confirmed = confirm(
-      `Are you sure you want to delete "${task.title}"?\n\nThis action cannot be undone.`
-    );
-
-    if (confirmed && task._id) {
-      this.taskService
-        .deleteTask(task._id)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => this.loadTasks(),
-          error: (error) => console.error('Error deleting task:', error),
-        });
+  public async deleteTask(task: Task): Promise<void> {
+    // Guard clause to prevent multiple simultaneous operations
+    if (this.isLoadingTasks()) {
+      return;
     }
+
+    try {
+      // Open confirmation dialog with enhanced messaging
+      const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+        width: '440px',
+        maxWidth: '95vw',
+        disableClose: true,
+        panelClass: 'custom-confirmation-dialog',
+        data: {
+          title: 'Delete Task',
+          message: `Are you sure you want to permanently delete "<strong>${task.title}</strong>"?<br><br><span class="text-gray-500 text-xs">This action cannot be undone and will remove all associated data.</span>`,
+          confirmButtonText: 'Delete Task',
+          cancelButtonText: 'Keep Task',
+          confirmButtonColor: 'warn',
+        } as ConfirmationDialogData,
+      });
+
+      const isConfirmed = await dialogRef.afterClosed().toPromise();
+
+      if (isConfirmed) {
+        await firstValueFrom(this.taskService.deleteTask(task._id!));
+        this.loadTasks();
+      }
+    } catch (error: any) {
+      this.handleError(error, `Failed to delete task "${task.title}"`);
+    }
+  }
+
+  public viewTaskHistory(task: Task): void {
+    const dialogRef = this.dialog.open(TaskHistoryDialogComponent, {
+      width: '700px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      disableClose: false,
+      data: {
+        task: task,
+      } as TaskHistoryDialogData,
+    });
+
+    // Optional: Handle any actions after dialog closes
+    dialogRef.afterClosed().subscribe((result) => {
+      // No action needed for history dialog
+    });
   }
 
   // CSS helper methods for status and priority styling
@@ -442,7 +519,8 @@ export class TaskListComponent implements OnInit, AfterViewInit {
     this.connectSort();
 
     // Reconnect paginator if needed
-    if (this.paginator && !this.paginator.page.observers.length) {
+    const paginatorInstance = this.paginator();
+    if (paginatorInstance && !paginatorInstance.page.observers.length) {
       this.connectPaginator();
     }
   }
@@ -459,11 +537,12 @@ export class TaskListComponent implements OnInit, AfterViewInit {
    * Updates paginator without triggering page events to prevent loops
    */
   private updatePaginatorSilently(): void {
-    if (this.paginator) {
+    const paginatorInstance = this.paginator();
+    if (paginatorInstance) {
       this.skipNextPageEvent = true;
-      this.paginator.pageIndex = this.currentPage() - 1;
-      this.paginator.length = this.totalItems();
-      this.paginator.pageSize = this.pageSize();
+      paginatorInstance.pageIndex = this.currentPage() - 1;
+      paginatorInstance.length = this.totalItems();
+      paginatorInstance.pageSize = this.pageSize();
     }
   }
 
@@ -479,8 +558,58 @@ export class TaskListComponent implements OnInit, AfterViewInit {
     this.loadTasks();
   }
 
+  public goToPreviousPage(): void {
+    if (this.hasPrev() && !this.isLoadingTasks()) {
+      const newPageIndex = this.currentPage() - 2;
+      this.handlePageEvent({
+        pageIndex: newPageIndex,
+        pageSize: this.pageSize(),
+        length: this.totalItems(),
+      } as PageEvent);
+    }
+  }
+
+  public goToNextPage(): void {
+    if (this.hasNext() && !this.isLoadingTasks()) {
+      const newPageIndex = this.currentPage();
+      this.handlePageEvent({
+        pageIndex: newPageIndex,
+        pageSize: this.pageSize(),
+        length: this.totalItems(),
+      } as PageEvent);
+    }
+  }
+
   private handleTasksError(error: any): void {
     console.error('Error loading tasks:', error);
     this.isLoadingTasks.set(false);
+  }
+
+  /**
+   * Handles errors with backend message display
+   */
+  private handleError(error: any, defaultMessage: string): void {
+    let errorMessage = defaultMessage;
+
+    if (error.message) {
+      errorMessage = error.message;
+    }
+
+    // Handle specific error cases
+    if (error.status === 404) {
+      errorMessage = 'Task not found. It may have already been deleted.';
+      this.loadTasks(); // Refresh the list
+    } else if (error.status === 403) {
+      errorMessage = 'You do not have permission to perform this action.';
+    } else if (error.status === 500) {
+      errorMessage = 'Server error occurred. Please try again later.';
+    }
+
+    this.snackBar.open(errorMessage, 'Close', {
+      duration: 5000,
+      panelClass: ['error-snackbar'],
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+    });
   }
 }

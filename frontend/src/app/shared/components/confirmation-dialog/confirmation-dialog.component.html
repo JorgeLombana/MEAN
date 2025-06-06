@@ -1,0 +1,48 @@
+<div
+  class="confirmation-dialog-container bg-white rounded-lg shadow-xl overflow-hidden max-w-md w-full"
+>
+  <!-- Dialog Header Section -->
+  <div class="dialog-header flex items-start gap-4 p-6">
+    <!-- Content Section -->
+    <div class="content-section flex-1 min-w-0">
+      <h2
+        class="dialog-title text-lg font-semibold text-gray-900 mb-2"
+        id="confirmation-dialog-title"
+      >
+        {{ dialogData.title }}
+      </h2>
+      <div
+        class="dialog-message text-sm text-gray-600 leading-relaxed"
+        [innerHTML]="dialogData.message"
+        aria-describedby="confirmation-dialog-title"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Action Buttons Section -->
+  <div class="dialog-actions bg-gray-50 px-6 py-4 flex justify-end gap-3">
+    <!-- Cancel Button -->
+    <button
+      mat-button
+      type="button"
+      (click)="handleCancel()"
+      [attr.aria-label]="getCancelButtonAriaLabel()"
+      class="cancel-button !px-4 !py-2 !text-sm !font-medium !text-gray-700 !normal-case !min-w-0 hover:!bg-gray-100 !transition-colors !duration-200 !rounded-md"
+    >
+      {{ dialogData.cancelButtonText || "Cancel" }}
+    </button>
+
+    <!-- Confirm Button -->
+    <button
+      mat-raised-button
+      type="button"
+      color="warn"
+      cdkFocusInitial
+      (click)="handleConfirm()"
+      [attr.aria-label]="getConfirmButtonAriaLabel()"
+      class="confirm-button !px-4 !py-2 !text-sm !font-medium !text-white !bg-red-600 !normal-case !min-w-0 hover:!bg-red-700 !transition-colors !duration-200 !shadow-sm !rounded-md"
+    >
+      {{ dialogData.confirmButtonText || "Confirm" }}
+    </button>
+  </div>
+</div>

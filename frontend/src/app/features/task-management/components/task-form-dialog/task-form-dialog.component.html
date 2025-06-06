@@ -1,0 +1,391 @@
+<div class="task-form-dialog">
+  <!-- Dialog Header with improved styling -->
+  <div
+    class="dialog-header bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-b border-gray-100"
+  >
+    <div class="flex items-center justify-between px-6 py-4">
+      <div class="flex items-center">
+        <div
+          class="p-2 bg-white rounded-lg shadow-sm border border-gray-100 mr-3"
+        >
+          <svg
+            class="h-5 w-5 text-indigo-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            @if (isEditMode()) {
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+            ></path>
+            } @else {
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+            ></path>
+            }
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-lg font-semibold text-gray-900">
+            {{ isEditMode() ? "Edit Task" : "Create New Task" }}
+          </h2>
+          <p class="text-xs text-gray-500">
+            {{
+              isEditMode()
+                ? "Update task details and save changes"
+                : "Fill in the details to create a new task"
+            }}
+          </p>
+        </div>
+      </div>
+      <button
+        mat-icon-button
+        (click)="onCancel()"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dialog Content -->
+  <div
+    class="dialog-content bg-gradient-to-b from-white to-gray-50 px-6 py-6 max-h-[70vh] overflow-y-auto"
+  >
+    <form [formGroup]="taskForm" class="task-form space-y-5">
+      <!-- Title Field -->
+      <div class="form-group">
+        <label class="block text-xs font-medium text-gray-700 mb-2">
+          Task Title *
+        </label>
+        <div class="relative">
+          <input
+            type="text"
+            formControlName="title"
+            placeholder="Enter task title"
+            maxlength="100"
+            class="block w-full pl-3 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+          />
+          <div class="mt-1 text-xs text-gray-500 text-right">
+            {{ titleControl.value?.length || 0 }}/100
+          </div>
+        </div>
+        @if (titleControl.hasError('required') && titleControl.touched) {
+        <p class="mt-1 text-xs text-red-600 flex items-center">
+          <svg class="h-3 w-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Title is required
+        </p>
+        } @if (titleControl.hasError('minlength') && titleControl.touched) {
+        <p class="mt-1 text-xs text-red-600 flex items-center">
+          <svg class="h-3 w-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Title must be at least 3 characters long
+        </p>
+        }
+      </div>
+
+      <!-- Description Field -->
+      <div class="form-group">
+        <label class="block text-xs font-medium text-gray-700 mb-2">
+          Description
+        </label>
+        <div class="relative">
+          <textarea
+            formControlName="description"
+            placeholder="Enter task description (optional)"
+            rows="3"
+            maxlength="500"
+            class="block w-full pl-3 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition duration-150 ease-in-out resize-none"
+          ></textarea>
+          <div class="mt-1 text-xs text-gray-500 text-right">
+            {{ descriptionControl.value?.length || 0 }}/500
+          </div>
+        </div>
+      </div>
+
+      <!-- Due Date and Time Field -->
+      <div class="form-group">
+        <label class="block text-xs font-medium text-gray-700 mb-2">
+          Due Date & Time *
+        </label>
+        <div class="relative">
+          <input
+            type="datetime-local"
+            formControlName="dueDate"
+            class="block w-full pl-3 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+          />
+        </div>
+        @if (dueDateControl.hasError('required') && dueDateControl.touched) {
+        <p class="mt-1 text-xs text-red-600 flex items-center">
+          <svg class="h-3 w-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Due date and time is required
+        </p>
+        } @if (dueDateControl.hasError('pastDate') && dueDateControl.touched) {
+        <p class="mt-1 text-xs text-red-600 flex items-center">
+          <svg class="h-3 w-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Due date and time cannot be in the past
+        </p>
+        }
+      </div>
+
+      <!-- Status and Priority Row -->
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <!-- Status Field -->
+        <div class="form-group">
+          <label class="block text-xs font-medium text-gray-700 mb-2">
+            Status *
+          </label>
+          <div class="relative">
+            <select
+              formControlName="status"
+              class="block w-full pl-3 pr-8 py-2.5 text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg disabled:bg-gray-50 disabled:cursor-not-allowed transition duration-150 ease-in-out bg-white appearance-none"
+            >
+              @for (status of statusOptions; track status.value) {
+              <option [value]="status.value">{{ status.label }}</option>
+              }
+            </select>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none"
+            >
+              <svg
+                class="h-4 w-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                ></path>
+              </svg>
+            </div>
+          </div>
+          @if (statusControl.hasError('required') && statusControl.touched) {
+          <p class="mt-1 text-xs text-red-600 flex items-center">
+            <svg class="h-3 w-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            Status is required
+          </p>
+          }
+        </div>
+
+        <!-- Priority Field -->
+        <div class="form-group">
+          <label class="block text-xs font-medium text-gray-700 mb-2">
+            Priority
+          </label>
+          <div class="relative">
+            <select
+              formControlName="priority"
+              class="block w-full pl-3 pr-8 py-2.5 text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg disabled:bg-gray-50 disabled:cursor-not-allowed transition duration-150 ease-in-out bg-white appearance-none"
+            >
+              @for (priority of priorityOptions; track priority.value) {
+              <option [value]="priority.value">{{ priority.label }}</option>
+              }
+            </select>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none"
+            >
+              <svg
+                class="h-4 w-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                ></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags Section -->
+      <div class="form-group">
+        <label class="block text-xs font-medium text-gray-700 mb-2">
+          Tags
+        </label>
+        <div class="flex gap-2 mb-3">
+          <div class="flex-1 relative">
+            <input
+              type="text"
+              #tagInput
+              [formControl]="newTagControl"
+              placeholder="Add a tag and press Enter"
+              (keydown.enter)="addTag($event, tagInput)"
+              (blur)="addTag($event, tagInput)"
+              maxlength="20"
+              class="block w-full pl-3 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition duration-150 ease-in-out h-[41px]"
+            />
+            <div class="mt-1 text-xs text-gray-500">Press Enter to add tag</div>
+          </div>
+          <button
+            type="button"
+            (click)="addTag($event, tagInput)"
+            [disabled]="!newTagControl.value?.trim()"
+            class="flex-shrink-0 w-[41px] h-[41px] flex items-center justify-center border border-gray-200 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150 ease-in-out"
+          >
+            <svg
+              class="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Tags Display -->
+        @if (tags().length > 0) {
+        <div
+          class="flex flex-wrap gap-2 p-3 bg-gray-50 border border-gray-200 rounded-lg"
+        >
+          @for (tag of tags(); track tag; let i = $index) {
+          <span
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 border border-indigo-200"
+          >
+            {{ tag }}
+            <button
+              type="button"
+              (click)="removeTag(i)"
+              class="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-indigo-400 hover:bg-indigo-200 hover:text-indigo-500 focus:outline-none focus:bg-indigo-200 focus:text-indigo-500"
+            >
+              <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </button>
+          </span>
+          }
+        </div>
+        } @if (tagError()) {
+        <p class="mt-2 text-xs text-red-600 flex items-center">
+          <svg class="h-3 w-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          {{ tagError() }}
+        </p>
+        }
+      </div>
+    </form>
+  </div>
+
+  <!-- Dialog Actions -->
+  <div
+    class="dialog-actions px-6 py-4 bg-white border-t border-gray-100 flex justify-end gap-3"
+  >
+    <button
+      type="button"
+      (click)="onCancel()"
+      [disabled]="isSubmitting()"
+      class="inline-flex items-center px-4 py-2 border border-gray-200 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150 ease-in-out"
+    >
+      Cancel
+    </button>
+    <button
+      type="button"
+      (click)="onSubmit()"
+      [disabled]="taskForm.invalid || isSubmitting()"
+      class="inline-flex items-center px-3 py-1.5 border border-gray-200 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150 ease-in-out"
+    >
+      @if (isSubmitting()) {
+      <svg
+        class="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          class="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          stroke-width="4"
+        ></circle>
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        ></path>
+      </svg>
+      } @else {
+      <svg
+        class="mr-2 h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        @if (isEditMode()) {
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+        ></path>
+        } @else {
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+        ></path>
+        }
+      </svg>
+      }
+      {{ isEditMode() ? "Update Task" : "Create Task" }}
+    </button>
+  </div>
+</div>

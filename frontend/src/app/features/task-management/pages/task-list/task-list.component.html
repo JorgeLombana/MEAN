@@ -1,5 +1,5 @@
 <div class="min-h-screen bg-gray-50">
-  <!-- Improved Sticky Navbar Header -->
+  <!-- Navbar Header -->
   <div
     class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100"
   >
@@ -110,13 +110,13 @@
     </div>
   </div>
 
-  <!-- Main Content with top padding to account for sticky navbar -->
+  <!-- Main Content -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <!-- Compact Filters Section -->
+    <!-- Filters Section -->
     <div
       class="bg-white shadow-sm rounded-lg border border-gray-100 mb-6 overflow-hidden"
     >
-      <!-- Compact Filter Header -->
+      <!-- Filter Header -->
       <div
         class="px-4 py-3 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-b border-gray-100"
       >
@@ -175,10 +175,10 @@
         </div>
       </div>
 
-      <!-- Compact Filter Controls -->
+      <!-- Filter Controls -->
       <div class="px-4 py-4 bg-gradient-to-b from-white to-gray-50">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <!-- Compact Search Input -->
+          <!-- Search Input -->
           <div class="relative">
             <label class="block text-xs font-medium text-gray-700 mb-1">
               Search Tasks
@@ -234,7 +234,7 @@
             </div>
           </div>
 
-          <!-- Compact Status Filter -->
+          <!-- Status Filter -->
           <div class="relative">
             <label class="block text-xs font-medium text-gray-700 mb-1">
               Status
@@ -272,7 +272,7 @@
             </div>
           </div>
 
-          <!-- Compact Priority Filter -->
+          <!-- Priority Filter -->
           <div class="relative">
             <label class="block text-xs font-medium text-gray-700 mb-1">
               Priority
@@ -311,7 +311,7 @@
           </div>
         </div>
 
-        <!-- Compact Filter Status Indicator -->
+        <!-- Filter Status Indicator -->
         @if (hasActiveFilters()) {
         <div class="mt-3 pt-3 border-t border-gray-100">
           <div
@@ -506,7 +506,7 @@
               </td>
             </ng-container>
 
-            <!-- Improved Due Date Column -->
+            <!-- Due Date Column -->
             <ng-container matColumnDef="dueDate">
               <th
                 mat-header-cell
@@ -533,7 +533,7 @@
               </td>
             </ng-container>
 
-            <!-- Improved Tags Column with consistent color and better layout -->
+            <!-- Tags Column -->
             <ng-container matColumnDef="tags">
               <th
                 mat-header-cell
@@ -545,7 +545,7 @@
               <td mat-cell *matCellDef="let task" class="px-3 py-3">
                 @if (task.tags && task.tags.length > 0) {
                 <div class="flex flex-col gap-1 max-w-36">
-                  <!-- First row - max 2 tags -->
+                  <!-- First row -->
                   <div class="flex gap-1">
                     @for (tag of task.tags | slice : 0 : 2; track tag) {
                     <span
@@ -583,7 +583,7 @@
               </td>
             </ng-container>
 
-            <!-- Enhanced Actions Column with better spacing -->
+            <!-- Actions Column  -->
             <ng-container matColumnDef="actions">
               <th
                 mat-header-cell
@@ -604,6 +604,7 @@
                     class="inline-flex items-center p-1 border border-transparent rounded-md text-gray-400 hover:text-purple-600 hover:bg-purple-50 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-colors"
                     [attr.aria-label]="'View history of ' + task.title"
                     title="View history"
+                    (click)="viewTaskHistory(task)"
                   >
                     <svg
                       class="h-3.5 w-3.5"
@@ -669,7 +670,7 @@
               </td>
             </ng-container>
 
-            <!-- Table Headers and Rows with softer colors -->
+            <!-- Table Headers and Rows -->
             <tr
               mat-header-row
               *matHeaderRowDef="displayedColumns"
@@ -683,23 +684,21 @@
           </table>
         </div>
 
-        <!-- Compact Pagination -->
+        <!-- Pagination -->
         <div class="bg-white border-t border-gray-200 sm:px-6">
           <div class="flex items-center justify-between">
             <!-- Mobile pagination controls -->
             <div class="flex-1 flex justify-between sm:hidden">
               <button
-                [disabled]="!hasPrev()"
-                (click)="
-                  currentPage() > 1 && currentPage.set(currentPage() - 1)
-                "
+                [disabled]="!hasPrev() || isLoadingTasks()"
+                (click)="goToPreviousPage()"
                 class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
               <button
-                [disabled]="!hasNext()"
-                (click)="hasNext() && currentPage.set(currentPage() + 1)"
+                [disabled]="!hasNext() || isLoadingTasks()"
+                (click)="goToNextPage()"
                 class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next

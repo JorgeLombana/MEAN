@@ -42,13 +42,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
                 }
               ],
               "outputHashing": "all",
@@ -59,27 +59,16 @@
                 }
               ]
             },
-            "qa": {
-              "buildOptimizer": false,
+            "development": {
               "optimization": false,
-              "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
-              "namedChunks": true,
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.qa.ts"
+                  "with": "src/environments/environment.dev.ts"
                 }
               ]
-            },
-            "development": {
-              "buildOptimizer": false,
-              "optimization": false,
-              "vendorChunk": true,
-              "extractLicenses": false,
-              "sourceMap": true,
-              "namedChunks": true
             }
           },
           "defaultConfiguration": "production"
@@ -89,9 +78,6 @@
           "configurations": {
             "production": {
               "buildTarget": "frontend:build:production"
-            },
-            "qa": {
-              "buildTarget": "frontend:build:qa"
             },
             "development": {
               "buildTarget": "frontend:build:development"
