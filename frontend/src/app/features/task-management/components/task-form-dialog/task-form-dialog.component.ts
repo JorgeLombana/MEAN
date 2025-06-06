@@ -127,7 +127,7 @@ export class TaskFormDialogComponent implements OnInit {
   }
 
   // Configuration arrays for dropdowns
-  public readonly statusOptions: StatusOption[] = [
+  private readonly baseStatusOptions: StatusOption[] = [
     {
       value: TaskStatus.PENDING,
       label: 'Pending',
@@ -141,6 +141,27 @@ export class TaskFormDialogComponent implements OnInit {
       class: 'in-progress',
     },
   ];
+
+  private readonly completedStatusOption: StatusOption = {
+    value: TaskStatus.COMPLETED,
+    label: 'Completed',
+    icon: 'check_circle',
+    class: 'completed',
+  };
+
+  public readonly statusOptions = computed(() => {
+    const baseOptions = [...this.baseStatusOptions];
+
+    if (
+      this.isEditMode() &&
+      (this.data.task?.status === TaskStatus.IN_PROGRESS ||
+        this.data.task?.status === TaskStatus.COMPLETED)
+    ) {
+      baseOptions.push(this.completedStatusOption);
+    }
+
+    return baseOptions;
+  });
 
   public readonly priorityOptions: PriorityOption[] = [
     {
